@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "generate-types": "typechain --target=ethers-v5     'build/contracts/*.json'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openzeppelin/contracts": "^5.1.0"
+    "@openzeppelin/contracts": "^5.1.0",
+    "@typechain/ethers-v5": "^11.1.2",
+    "typechain": "^8.3.2"
   }
 }
