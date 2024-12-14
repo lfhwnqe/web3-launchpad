@@ -11,24 +11,11 @@ REPORT_GAS=true npx hardhat test
 # 启动本地节点
 npx hardhat node
 # 部署
+```shell
 npx hardhat ignition deploy ./ignition/modules/Lock.ts
 ```
-## gui界面
 
-https://app.tryethernal.com/overview
-
-安装
-
-```bash
-pnpm install --save-dev hardhat-ethernal
+# 部署ydtoken
+```shell
+npx hardhat run scripts/initializeToken.ts --network localhost
 ```
-
-添加配置:hardhat.config.js 中添加
-
-```bash
-require('hardhat-ethernal');
-```
-
-在 [https://app.tryethernal.com](https://app.tryethernal.com/) 注册账号,获取 API token
-
-初始化浏览器
