@@ -14,8 +14,11 @@ npx hardhat node
 ```shell
 npx hardhat ignition deploy ./ignition/modules/Lock.ts
 ```
-
-# 部署ydtoken
+# 测试
 ```shell
+npx hardhat test test/YiDengToken.test.ts
+```
+# 部署ydtoken
+```**shell**z
 npx hardhat run scripts/initializeToken.ts --network localhost
 ```

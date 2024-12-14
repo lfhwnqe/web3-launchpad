@@ -75,7 +75,8 @@ contract YiDengToken is ERC20, Ownable {
     function buyWithETH() external payable {
         require(msg.value > 0, "Must send ETH");
 
-        uint256 tokenAmount = msg.value * TOKENS_PER_ETH;
+        // 将 ETH 的 wei 转换为 ETH 单位后再计算代币数量
+        uint256 tokenAmount = (msg.value * TOKENS_PER_ETH) / 1 ether;
         require(
             totalSupply() + tokenAmount <= MAX_SUPPLY,
             "Would exceed max supply"
@@ -93,8 +94,8 @@ contract YiDengToken is ERC20, Ownable {
         require(tokenAmount > 0, "Amount must be greater than 0");
         require(balanceOf(msg.sender) >= tokenAmount, "Insufficient balance");
 
-        // 计算ETH数量
-        uint256 ethAmount = tokenAmount / TOKENS_PER_ETH;
+        // 计算ETH数量 (需要乘以 1 ether 来匹配 buyWithETH 的单位)
+        uint256 ethAmount = (tokenAmount * 1 ether) / TOKENS_PER_ETH;
         require(
             address(this).balance >= ethAmount,
             "Insufficient ETH in contract"
