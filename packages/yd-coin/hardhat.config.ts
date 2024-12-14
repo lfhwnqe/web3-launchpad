@@ -14,12 +14,16 @@ const config: HardhatUserConfig = {
     }
   },
   networks: {
+    hardhat: {
+      chainId: 1337
+    },
     localhost: {
-      url: "http://127.0.0.1:8545"
+      url: "http://127.0.0.1:8545",
+      chainId: 1337
     }
   },
   ethernal: {
-    workspace: 'YiDeng', // 你的工作区名称
+    workspace: 'YiDeng',
     disabled: false
   }
 };
