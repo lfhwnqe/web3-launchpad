@@ -16,9 +16,15 @@ npx hardhat ignition deploy ./ignition/modules/Lock.ts
 ```
 # 测试
 ```shell
+# 测试ydtoken
 npx hardhat test test/YiDengToken.test.ts
+# 测试课程市场
+npx hardhat test test/CourseMarket.test.ts
 ```
 # 部署ydtoken
-```**shell**z
+```shell
+# 部署ydtoken
 npx hardhat run scripts/initializeToken.ts --network localhost
+# 部署课程市场
+npx hardhat run scripts/deployCourseMarket.ts --network localhost
 ```
