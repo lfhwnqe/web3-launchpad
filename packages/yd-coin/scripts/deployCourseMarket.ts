@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import hre from "hardhat";
 
 async function main() {
     const [deployer] = await ethers.getSigners();
@@ -10,6 +11,13 @@ async function main() {
     const token = await YiDengToken.deploy();
     await token.waitForDeployment();
     const tokenAddress = await token.getAddress();
+    
+    // 同步到 Ethernal
+    await hre.ethernal.push({
+        name: 'YiDengToken',
+        address: tokenAddress
+    });
+    
     console.log("YiDengToken 部署完成，地址:", tokenAddress);
 
     // 2. 部署课程市场
@@ -18,6 +26,13 @@ async function main() {
     const market = await CourseMarket.deploy(tokenAddress);
     await market.waitForDeployment();
     const marketAddress = await market.getAddress();
+    
+    // 同步到 Ethernal
+    await hre.ethernal.push({
+        name: 'CourseMarket',
+        address: marketAddress
+    });
+    
     console.log("课程市场部署完成，地址:", marketAddress);
 
     // 3. 初始化代币分配
