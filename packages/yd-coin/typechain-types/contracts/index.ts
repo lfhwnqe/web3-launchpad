@@ -3,4 +3,5 @@
 /* eslint-disable */
 export type { CourseMarket } from "./CourseMarket";
 export type { YDCoin } from "./YDCoin";
+export type { YiDengERC721Coin } from "./YiDengERC721Coin";
 export type { YiDengToken } from "./YiDengToken";

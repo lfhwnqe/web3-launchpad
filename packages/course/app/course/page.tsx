@@ -5,6 +5,7 @@ import { hooks } from '@/app/connections/metaMask';
 import { ethers } from 'ethers';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { CourseMarket__factory, YiDengToken__factory } from '@/app/abi/typechain-types';
+import NFTGallery from '@/app/components/NFTGallery';
 
 interface Course {
   web2CourseId: string;
@@ -24,6 +25,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [userCourses, setUserCourses] = useState<Record<string, boolean>>({});
+  const [tokenBalance, setTokenBalance] = useState<string>('0');
 
   const tokenAddress = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "";
   const marketAddress = process.env.NEXT_PUBLIC_MARKET_ADDRESS || "";
@@ -146,13 +148,18 @@ const HomePage = () => {
       console.log("开始购买流程...");
       console.log("当前账户:", account[0]);
 
-      // 1. 检查余额
-      const balance = await contracts.token.balanceOf(account[0]);
-      console.log("当前代币余额:", balance.toString());
-
-      // 2. 获取课程信息
+      // 1. 获取课程信息
       const course = await contracts.market.courses(1);
       console.log("课程信息:", course);
+
+      // 2. 检查代币余额
+      const balance = await contracts.token.balanceOf(account[0]);
+      console.log("当前代币余额:", balance.toString());
+      
+      if (balance < course.price) {
+        alert("代币余额不足");
+        return;
+      }
 
       // 3. 检查授权额度
       const allowance = await contracts.token.allowance(account[0], marketAddress);
@@ -171,9 +178,12 @@ const HomePage = () => {
           );
           console.log("授权交易已发送, hash:", approveTx.hash);
           
-          // 等待交易被挖矿
           const approveReceipt = await provider?.waitForTransaction(approveTx.hash);
           console.log("授权交易已确认:", approveReceipt);
+          
+          if (!approveReceipt || approveReceipt.status === 0) {
+            throw new Error("授权失败");
+          }
         } catch (approveError) {
           console.error("授权失败:", approveError);
           return;
@@ -182,39 +192,37 @@ const HomePage = () => {
 
       // 5. 执行购买
       console.log("开始购买课程...");
-      try {
-        const purchaseTx = await contracts.market.purchaseCourse(
-          courseId,
-          {
-            gasLimit: 300000
-          }
-        );
-        console.log("购买交易已发送, hash:", purchaseTx.hash);
+      const tx = await contracts.market.purchaseCourse(courseId, {
+        gasLimit: 300000
+      });
+      console.log("购买交易已发送, hash:", tx.hash);
+      
+      const receipt = await provider?.waitForTransaction(tx.hash);
+      console.log("购买交易已���认:", receipt);
+
+      if (receipt?.status === 1) {
+        console.log("课程购买成功");
+        // 更新用户课程状态
+        setUserCourses(prev => ({
+          ...prev,
+          [courseId]: true
+        }));
+
+        // 更新代币余额
+        await loadTokenBalance();
         
-        // 等待交易被挖矿
-        const purchaseReceipt = await provider?.waitForTransaction(purchaseTx.hash);
-        console.log("购买交易已确认:", purchaseReceipt);
-
-        if (purchaseReceipt?.status === 1) {
-          console.log("课程购买成功");
-          // 直接更新状态，不触发重新加载
-          setUserCourses(prev => ({
-            ...prev,
-            [courseId]: true
-          }));
-        } else {
-          console.error("购买交易失败");
-        }
-      } catch (purchaseError) {
-        console.error("购买失败:", purchaseError);
+        // 可以添加成功提示
+        alert("课程购买成功！");
+      } else {
+        throw new Error("购买交易失败");
       }
-
     } catch (error: any) {
       console.error("购买流程失败:", {
         message: error.message,
         code: error.code,
         data: error.data
       });
+      alert("购买失败，请查看控制台了解详情");
     }
   };
 
@@ -300,6 +308,23 @@ const HomePage = () => {
     }
   }, [initialized, courses.length, account, contracts?.market, loadUserCourses]);
 
+  const loadTokenBalance = useCallback(async () => {
+    if (!contracts?.token || !account?.[0]) return;
+    try {
+      const balance = await contracts.token.balanceOf(account[0]);
+      setTokenBalance(balance.toString());
+      console.log("更新代币余额:", balance.toString());
+    } catch (error) {
+      console.error("加载代币余额失败:", error);
+    }
+  }, [contracts?.token, account]);
+
+  useEffect(() => {
+    if (account && contracts?.token) {
+      loadTokenBalance();
+    }
+  }, [account, contracts?.token, loadTokenBalance]);
+
   return (
     <div className="p-4">
       <h1 className="text-2xl mb-4">课程市场</h1>
@@ -314,6 +339,14 @@ const HomePage = () => {
         >
           验证合约
         </Button>
+      </div>
+
+      <div className="my-8">
+        <NFTGallery 
+          provider={provider} 
+          signer={signer} 
+          account={account?.[0]}
+        />
       </div>
 
       <div className="my-8">
@@ -392,6 +425,10 @@ const HomePage = () => {
           检查课程所有权
         </Button>
       </div>
+
+      <Typography variant="subtitle1" gutterBottom>
+        YD Token 余额: {tokenBalance}
+      </Typography>
     </div>
   );
 };
