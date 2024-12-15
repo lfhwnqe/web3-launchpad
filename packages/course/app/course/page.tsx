@@ -198,7 +198,7 @@ const HomePage = () => {
       console.log("购买交易已发送, hash:", tx.hash);
       
       const receipt = await provider?.waitForTransaction(tx.hash);
-      console.log("购买交易已���认:", receipt);
+      console.log("购买交易已确认:", receipt);
 
       if (receipt?.status === 1) {
         console.log("课程购买成功");
@@ -207,10 +207,6 @@ const HomePage = () => {
           ...prev,
           [courseId]: true
         }));
-
-        // 更新代币余额
-        await loadTokenBalance();
-        
         // 可以添加成功提示
         alert("课程购买成功！");
       } else {
@@ -308,22 +304,21 @@ const HomePage = () => {
     }
   }, [initialized, courses.length, account, contracts?.market, loadUserCourses]);
 
-  const loadTokenBalance = useCallback(async () => {
+  const loadTokenBalance = async () => {
     if (!contracts?.token || !account?.[0]) return;
     try {
       const balance = await contracts.token.balanceOf(account[0]);
       setTokenBalance(balance.toString());
-      console.log("更新代币余额:", balance.toString());
     } catch (error) {
       console.error("加载代币余额失败:", error);
     }
-  }, [contracts?.token, account]);
+  };
 
   useEffect(() => {
-    if (account && contracts?.token) {
+    if (account) {
       loadTokenBalance();
     }
-  }, [account, contracts?.token, loadTokenBalance]);
+  }, [account, contracts?.token]);
 
   return (
     <div className="p-4">
