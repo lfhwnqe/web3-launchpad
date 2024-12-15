@@ -25,6 +25,12 @@ const config: HardhatUserConfig = {
   ethernal: {
     workspace: 'YiDeng',
     disabled: false
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
   }
 };
 
